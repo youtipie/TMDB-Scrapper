@@ -17,6 +17,8 @@ ROBOTSTXT_OBEY = False
 
 LOG_LEVEL = "INFO"
 
+LOG_FORMATTER = "tmdb.log_formatter.PoliteLogFormatter"
+
 CONCURRENT_REQUESTS = 50
 
 RETRY_HTTP_CODES = [429]
