@@ -78,6 +78,10 @@ celerybeat-schedule
 # dotenv
 .env
 
+# sqlite db
+*.db
+*.db-journal
+
 # virtualenv
 .venv/
 ENV/
@@ -90,3 +94,6 @@ ENV/
 
 *.json
 .idea/
+
+# Ignore temporary data files
+tmdb/data/*

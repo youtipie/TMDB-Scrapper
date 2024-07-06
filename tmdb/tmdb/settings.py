@@ -8,10 +8,18 @@ BOT_NAME = "tmdb"
 SPIDER_MODULES = ["tmdb.spiders"]
 NEWSPIDER_MODULE = "tmdb.spiders"
 
+FILES_STORE = "data"
+
+DATABASE_URI = os.environ.get("database_uri")
+
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_LEVEL = "INFO"
+
 CONCURRENT_REQUESTS = 50
+
+RETRY_HTTP_CODES = [429]
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
@@ -20,10 +28,10 @@ DEFAULT_REQUEST_HEADERS = {
 }
 
 # Enable or disable spider middlewares
-# See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    "tmdb.middlewares.TmdbSpiderMiddleware": 543,
-# }
+SPIDER_MIDDLEWARES = {
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
+    "tmdb.middlewares.TooManyRequestsRetryMiddleware": 543,
+}
 
 # Enable or disable downloader middlewares
 DOWNLOADER_MIDDLEWARES = {
@@ -48,10 +56,10 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 # }
 
 # Configure item pipelines
-# See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "tmdb.pipelines.TmdbPipeline": 300,
-# }
+ITEM_PIPELINES = {
+    "tmdb.pipelines.ProcessItemPipeline": 300,
+    "tmdb.pipelines.SaveToDB": 800
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
