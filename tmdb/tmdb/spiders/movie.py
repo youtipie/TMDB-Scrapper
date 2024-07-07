@@ -52,6 +52,7 @@ class MovieSpider(scrapy.Spider):
             yield scrapy.Request(url=movie_details_url, callback=self.get_movie_details)
 
     def get_movie_details(self, response):
+        # TODO: Add tv series support
         data = response.json()
         movie_item = MovieItem()
         movie_item["id"] = data.get("id")
