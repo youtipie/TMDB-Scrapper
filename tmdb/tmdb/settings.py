@@ -1,9 +1,12 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BOT_NAME = "tmdb"
+
+LANGUAGES_TO_SCRAPE = ["ru-RU", "uk-UA"]
 
 SPIDER_MODULES = ["tmdb.spiders"]
 NEWSPIDER_MODULE = "tmdb.spiders"
@@ -57,11 +60,6 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 #    "scrapy.extensions.telnet.TelnetConsole": None,
 # }
 
-# Configure item pipelines
-ITEM_PIPELINES = {
-    "tmdb.pipelines.ProcessItemPipeline": 300,
-    "tmdb.pipelines.SaveToDB": 800
-}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

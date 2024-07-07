@@ -2,11 +2,12 @@ import gzip
 import json
 import os.path
 import shutil
-from datetime import date
+from datetime import datetime, timedelta
 
 
 def generate_id_exports_url():
-    current_date = date.today().strftime("%m_%d_%Y")
+    # Daily id exports starts at 7-8 UTC, so to be sure we subtract 10 hours
+    current_date = (datetime.utcnow() - timedelta(hours=10)).date().strftime("%m_%d_%Y")
     url = f"https://files.tmdb.org/p/exports/movie_ids_{current_date}.json.gz"
     return url
 

@@ -1,9 +1,8 @@
+import time
+
 from scrapy import signals
 from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.utils.response import response_status_message
-from itemadapter import is_item, ItemAdapter
-
-import time
 
 
 class TooManyRequestsRetryMiddleware(RetryMiddleware):

@@ -1,16 +1,15 @@
-from itemadapter import ItemAdapter
-from scrapy.exceptions import DropItem
-
 from datetime import datetime
 
+from itemadapter import ItemAdapter
+from scrapy.exceptions import DropItem, CloseSpider
 from scrapy.utils.project import get_project_settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .db import Base, Movie, Genre
+from .db import Base, Movie, Genre, MovieTranslations, GenreTranslations
 
 
-class ProcessItemPipeline:
+class MovieItemPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 
@@ -22,11 +21,6 @@ class ProcessItemPipeline:
                 url = "https://image.tmdb.org/t/p/original/" + value
                 adapter[url_key] = url
 
-        # Get list of genres instead of list of dictionaries
-        # genres_dict = adapter.get("genres")
-        # genres_list = [genre["name"] for genre in genres_dict]
-        # adapter["genres"] = genres_list
-
         # Get the first country in origin country list
         origin_country_list_value = adapter.get("origin_country")
         if origin_country_list_value:
@@ -34,16 +28,31 @@ class ProcessItemPipeline:
 
         # Transform release date to Date object
         release_date_string = adapter.get("release_date")
-        if release_date_string:
+        if release_date_string and isinstance(release_date_string, str):
             release_date_value = datetime.strptime(release_date_string, "%Y-%m-%d").date()
             adapter["release_date"] = release_date_value
 
+        # Set overview value to None if it is empty string
+        for translation in adapter.get("translations"):
+            translation_overview_value = translation.get("overview")
+            translation["overview"] = None if translation_overview_value == "" else translation_overview_value
+
         # Drop items if they don't contain necessary data
-        important_keys = ["genres", "origin_country", "original_title", "title", "release_date", "runtime"]
+        important_keys = ["genres", "origin_country", "original_title", "release_date", "runtime"]
         for key in important_keys:
             key_value = adapter.get(key)
             if not key_value:
                 raise DropItem("Dropping item with insufficient data!")
+        return item
+
+
+class GenreItemPipeline:
+    def process_item(self, item, spider):
+        adapter = ItemAdapter(item)
+
+        name_value = adapter.get("name")
+        adapter["name"] = name_value.title()
+
         return item
 
 
@@ -58,6 +67,9 @@ class SaveToDB:
         # self.session.query(Movie).delete()
         # self.session.query(Genre).delete()
 
+
+class SaveMoviesPipeline(SaveToDB):
+
     def process_item(self, item, spider):
         movie = self.session.query(Movie).filter_by(id=item["id"]).first()
         if not movie:
@@ -65,20 +77,50 @@ class SaveToDB:
             self.session.add(movie)
 
         for field, value in item.items():
-            if field != "genres":
+            if field not in ["genres", "translations"]:
                 setattr(movie, field, value)
+
+        self.session.query(MovieTranslations).filter_by(movie_id=movie.id).delete()
+        for translation in item["translations"]:
+            movie_translation = MovieTranslations(**translation)
+            movie_translation.movie = movie
+            self.session.add(movie_translation)
 
         for genre_item in item["genres"]:
             genre = self.session.query(Genre).filter_by(id=genre_item["id"]).first()
             if not genre:
-                genre = Genre()
-                self.session.add(genre)
-
-            for field, value in genre_item.items():
-                setattr(genre, field, value)
+                raise CloseSpider("Cannot find corresponding genre for a movie. Please run CategorySpider first!")
 
             if genre not in movie.genres:
                 movie.genres.append(genre)
+
+        self.session.commit()
+        return item
+
+    def close_spider(self, spider):
+        self.session.close()
+
+
+class SaveGenresPipeline(SaveToDB):
+    def process_item(self, item, spider):
+        genre = self.session.query(Genre).filter_by(id=item["id"]).first()
+        if not genre:
+            genre = Genre(id=item["id"])
+            self.session.add(genre)
+
+        genre_translation = (self.session.query(GenreTranslations)
+                             .filter_by(genre_id=genre.id, language=item["language"]).first())
+        if not genre_translation:
+            genre_translation = GenreTranslations()
+            genre_translation.genre = genre
+            self.session.add(genre_translation)
+
+        for field, value in item.items():
+            if field not in ["id"]:
+                setattr(genre_translation, field, value)
+
+        # if genre_translation not in genre.translations:
+        #     genre_translation.append(genre_translation)
 
         self.session.commit()
         return item
