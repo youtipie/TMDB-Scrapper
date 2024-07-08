@@ -22,8 +22,12 @@ class CategorySpider(scrapy.Spider):
     def start_requests(self) -> Iterable[Request]:
         languages = ["en-US"] + get_project_settings().get("LANGUAGES_TO_SCRAPE")
         for language in languages:
-            url = f"https://api.themoviedb.org/3/genre/movie/list?language={language}"
-            yield scrapy.Request(url=url, callback=self.parse, meta={"language": language})
+            url_list = [
+                f"https://api.themoviedb.org/3/genre/movie/list?language={language}",
+                f"https://api.themoviedb.org/3/genre/tv/list?language={language}"
+            ]
+            for url in url_list:
+                yield scrapy.Request(url=url, callback=self.parse, meta={"language": language})
 
     def parse(self, response: Response, **kwargs: Any) -> Any:
         data = response.json()
