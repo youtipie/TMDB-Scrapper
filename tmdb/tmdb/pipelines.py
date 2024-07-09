@@ -6,10 +6,11 @@ from scrapy.utils.project import get_project_settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .db import Base, Movie, Genre, MovieTranslations, GenreTranslations
+from .db import Base, Movie, Genre, MovieTranslations, GenreTranslations, Series, SeriesTranslations
+from .items import MovieItem, TVSeriesItem
 
 
-class MovieItemPipeline:
+class MediaItemPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 
@@ -38,7 +39,13 @@ class MovieItemPipeline:
             translation["overview"] = None if translation_overview_value == "" else translation_overview_value
 
         # Drop items if they don't contain necessary data
-        important_keys = ["genres", "origin_country", "original_title", "release_date", "runtime"]
+        important_keys = ["genres", "origin_country", "original_title", "release_date"]
+
+        if isinstance(item, MovieItem):
+            important_keys.append("runtime")
+        elif isinstance(item, TVSeriesItem):
+            important_keys.extend(["number_of_episodes", "number_of_seasons"])
+
         for key in important_keys:
             key_value = adapter.get(key)
             if not key_value:
@@ -67,38 +74,49 @@ class SaveToDB:
         # self.session.query(Movie).delete()
         # self.session.query(Genre).delete()
 
+    def close_spider(self, spider):
+        self.session.close()
 
-class SaveMoviesPipeline(SaveToDB):
+
+class SaveMediaPipeline(SaveToDB):
 
     def process_item(self, item, spider):
-        movie = self.session.query(Movie).filter_by(id=item["id"]).first()
-        if not movie:
-            movie = Movie()
-            self.session.add(movie)
+        if isinstance(item, MovieItem):
+            media_class = Movie
+            translations_class = MovieTranslations
+        elif isinstance(item, TVSeriesItem):
+            media_class = Series
+            translations_class = SeriesTranslations
+        else:
+            return item
+
+        media = self.session.query(media_class).filter_by(id=item["id"]).first()
+        if not media:
+            media = media_class()
+            self.session.add(media)
 
         for field, value in item.items():
             if field not in ["genres", "translations"]:
-                setattr(movie, field, value)
+                setattr(media, field, value)
 
-        self.session.query(MovieTranslations).filter_by(movie_id=movie.id).delete()
+        for translation in media.translations:
+            self.session.delete(translation)
+
         for translation in item["translations"]:
-            movie_translation = MovieTranslations(**translation)
-            movie_translation.movie = movie
-            self.session.add(movie_translation)
+            media_translation = translations_class(**translation)
+            media.translations.append(media_translation)
+            self.session.add(media_translation)
 
         for genre_item in item["genres"]:
             genre = self.session.query(Genre).filter_by(id=genre_item["id"]).first()
             if not genre:
                 raise CloseSpider("Cannot find corresponding genre for a movie. Please run CategorySpider first!")
 
-            if genre not in movie.genres:
-                movie.genres.append(genre)
+            if genre not in media.genres:
+                media.genres.append(genre)
 
         self.session.commit()
         return item
-
-    def close_spider(self, spider):
-        self.session.close()
 
 
 class SaveGenresPipeline(SaveToDB):
@@ -124,6 +142,3 @@ class SaveGenresPipeline(SaveToDB):
 
         self.session.commit()
         return item
-
-    def close_spider(self, spider):
-        self.session.close()

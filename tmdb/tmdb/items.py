@@ -1,7 +1,7 @@
 import scrapy
 
 
-class MovieItem(scrapy.Item):
+class MediaItem(scrapy.Item):
     id = scrapy.Field()
     backdrop_path = scrapy.Field()
     genres = scrapy.Field()
@@ -9,10 +9,21 @@ class MovieItem(scrapy.Item):
     original_title = scrapy.Field()
     poster_path = scrapy.Field()
     release_date = scrapy.Field()
-    runtime = scrapy.Field()
-    vote_average = scrapy.Field()
 
+    vote_average = scrapy.Field()
     translations = scrapy.Field()
+
+
+class MovieItem(MediaItem):
+    runtime = scrapy.Field()
+
+
+class TVSeriesItem(MediaItem):
+    in_production = scrapy.Field()
+    number_of_episodes = scrapy.Field()
+    number_of_seasons = scrapy.Field()
+    status = scrapy.Field()
+    # TODO: Add seasons? Is it worth it?
 
 
 class TranslationItem(scrapy.Item):
@@ -20,7 +31,7 @@ class TranslationItem(scrapy.Item):
     is_default = scrapy.Field()
 
 
-class MovieTranslationItem(TranslationItem):
+class MovieAndSeriesTranslationItem(TranslationItem):
     overview = scrapy.Field()
     title = scrapy.Field()
 

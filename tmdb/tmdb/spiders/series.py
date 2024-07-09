@@ -1,12 +1,12 @@
 import scrapy
 
 from .base_spider import BaseSpider
-from ..items import MovieItem, MovieAndSeriesTranslationItem, GenreItem
+from ..items import TVSeriesItem, MovieAndSeriesTranslationItem, GenreItem
 from ..utils import ContentType
 
 
-class MovieSpider(BaseSpider):
-    name = "movie"
+class SeriesSpider(BaseSpider):
+    name = "series"
 
     custom_settings = {
         "ITEM_PIPELINES": {
@@ -17,30 +17,33 @@ class MovieSpider(BaseSpider):
 
     @property
     def content_type(self):
-        return ContentType.MOVIE
+        return ContentType.SERIES
 
     @property
     def details_url(self):
-        return "https://api.themoviedb.org/3/movie/"
+        return "https://api.themoviedb.org/3/tv/"
 
     def get_details(self, response):
         data = response.json()
-        movie_item = MovieItem()
+        movie_item = TVSeriesItem()
         movie_item["id"] = data.get("id")
         movie_item["backdrop_path"] = data.get("backdrop_path")
         movie_item["genres"] = []
         movie_item["origin_country"] = data.get("origin_country")
-        movie_item["original_title"] = data.get("original_title")
+        movie_item["original_title"] = data.get("original_name")
         movie_item["poster_path"] = data.get("poster_path")
-        movie_item["release_date"] = data.get("release_date")
-        movie_item["runtime"] = data.get("runtime")
+        movie_item["release_date"] = data.get("first_air_date")
+        movie_item["in_production"] = data.get("in_production")
+        movie_item["number_of_episodes"] = data.get("number_of_episodes")
+        movie_item["number_of_seasons"] = data.get("number_of_seasons")
+        movie_item["status"] = data.get("status")
         movie_item["vote_average"] = data.get("vote_average")
 
         default_translation = MovieAndSeriesTranslationItem()
         default_translation["is_default"] = True
         default_translation["language"] = "en-US"
         default_translation["overview"] = data.get("overview")
-        default_translation["title"] = data.get("title")
+        default_translation["title"] = data.get("name")
 
         movie_item["translations"] = [default_translation]
 
@@ -51,10 +54,10 @@ class MovieSpider(BaseSpider):
 
         for language in self.languages_to_scrape:
             url = f"{self.details_url}{movie_item['id']}?language={language}"
-            yield scrapy.Request(url=url, callback=self.get_movie_translations,
+            yield scrapy.Request(url=url, callback=self.get_series_translations,
                                  meta={"item": movie_item, "language": language})
 
-    def get_movie_translations(self, response):
+    def get_series_translations(self, response):
         movie_item = response.meta["item"]
         data = response.json()
 
@@ -62,7 +65,7 @@ class MovieSpider(BaseSpider):
         translation["is_default"] = False
         translation["language"] = response.meta["language"]
         translation["overview"] = data.get("overview")
-        translation["title"] = data.get("title")
+        translation["title"] = data.get("name")
 
         movie_item["translations"].append(translation)
 
