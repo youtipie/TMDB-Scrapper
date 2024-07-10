@@ -13,7 +13,7 @@ NEWSPIDER_MODULE = "tmdb.spiders"
 
 FILES_STORE = "data"
 
-DATABASE_URI = os.environ.get("database_uri")
+DATABASE_URI = os.environ.get("DATABASE_URI")
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -29,7 +29,7 @@ RETRY_HTTP_CODES = [429]
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
     "accept": "application/json",
-    "Authorization": f"Bearer {os.environ.get('api_key')}"
+    "Authorization": f"Bearer {os.environ.get('API_KEY')}"
 }
 
 # Enable or disable spider middlewares
