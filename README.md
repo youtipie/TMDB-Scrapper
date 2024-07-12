@@ -4,7 +4,7 @@ TMDB Scraper is a Scrapy project that includes multiple spiders to retrieve all 
 
 ## Installation
 
-### Using Github:
+### Using GitHub:
 Download code from repository or use:
 ```bash
 git clone https://github.com/youtipie18/TMDB-Scrapper.git
@@ -40,16 +40,12 @@ DATABASE_URI=sqlite:///results.db
 > **Note** 
 > You can also use an .env file to set the env variables. Just put it in the root directory:
 >  ```bash
-> ├── tmdb
->    ├── tmdb
->    ├── scrapy.cfg
+> ├── spiders
+> ├── ...
+> ├── scrapy.cfg
 > └── .env
 > ```
 
-- Then you need to go to project directory:
-```bash
-cd tmdb
-```
 - Finally you can start spiders using following command:
 ```bash
 scrapy crawl <spider_name>
@@ -100,8 +96,7 @@ scrapy crawl update_series
 To keep your data up-to-date, you can schedule the `update_movies` and `update_series` spiders using cron jobs or other scheduling tools. Here is an example of a cron job to run the update spiders daily at midnight:
 
 ```bash
-0 0 * * * cd tmdb && scrapy crawl update_movies
-0 0 * * * cd tmdb && scrapy crawl update_series
+0 0 * * * root /app/daily_spiders.sh
 ```
 
 ## License

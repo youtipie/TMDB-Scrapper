@@ -2,7 +2,8 @@
 
 spiders=("update_movies" "update_series")
 
-cd /tmdb
+cd /app || exit
+
 for spider in "${spiders[@]}"
 do
     scrapy crawl "$spider"

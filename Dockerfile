@@ -1,13 +1,13 @@
 FROM python:slim
 
-COPY requirements.txt requirements.txt
+WORKDIR /app
+COPY . .
+
 RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends cron
 
-COPY tmdb tmdb
-COPY boot.sh start_once_spiders.sh daily_spiders.sh ./
-RUN chmod +x start_once_spiders.sh daily_spiders.sh boot.sh
+RUN chmod u+x start_once_spiders.sh daily_spiders.sh run_cron.sh boot.sh
 
-RUN apt-get update && apt-get install -y cron
-
+ADD crontab /etc/cron.d/crontab
 
 ENTRYPOINT ["./boot.sh"]
