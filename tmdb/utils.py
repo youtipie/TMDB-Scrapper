@@ -25,6 +25,10 @@ def generate_id_exports_url(content_type):
     return url
 
 
+def get_data_filename(content_type):
+    return f"{content_type}_data.json"
+
+
 def save_id_data(download_path, filename, content):
     if not os.path.exists(download_path):
         os.mkdir(download_path)

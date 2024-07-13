@@ -96,4 +96,4 @@ ENV/
 .idea/
 
 # Ignore temporary data files
-tmdb/data/*
+data/*
