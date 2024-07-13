@@ -61,31 +61,37 @@ That's it! Once started, it will run all the necessary spiders and create a cron
 
 ## List of spiders
 
-### 1. Category Spider
-**Description**: Run this spider first! This spider will extract all genres.
+### 1. IDs Spider
+**Description**: Run this spider first! This spider will download two files with IDs for all movies and series.
+```bash
+scrapy crawl ids
+```
+
+### 2. Category Spider
+**Description**: Run this spider before movie and series spider! This spider will extract all genres.
 ```bash
 scrapy crawl category
 ```
 
-### 2. Movie Spider
+### 3. Movie Spider
 **Description**: Run this spider to collect all movie data. This is the initial data collection, so the process can take a long time.
 ```bash
 scrapy crawl movie
 ```
 
-### 3. Series Spider
+### 4. Series Spider
 **Description**: Run this spider to collect all series data. This is the initial data collection, so the process can take a long time.
 ```bash
 scrapy crawl series
 ```
 
-### 4. Update Movies Spider
+### 5. Update Movies Spider
 **Description**: Run this spider to update all movies that have been added or changed on TMDB. You can schedule this spider using cron or other tools.
 ```bash
 scrapy crawl update_movies
 ```
 
-### 5. Update Series Spider
+### 6. Update Series Spider
 **Description**: Run this spider first! This spider will extract all genres.
 ```bash
 scrapy crawl update_series

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-spiders=("category" "movie" "series")
+spiders=("ids" "category" "movie" "series")
 
 cd /app || exit
 
