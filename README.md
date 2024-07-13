@@ -55,7 +55,8 @@ scrapy crawl <spider_name>
 
 After installing this project with `docker pull`, you can start the container with the following command:
 ```bash
-docker run -d -e API_KEY=<your_api_key> -e DATABASE_URI=<your_db_uri> --name spider youtipie/tmdb-scraper:latest
+docker run -d -e API_KEY=<your_api_key> -e DATABASE_URI=<your_db_uri> \
+-e CONCURRENT_REQUESTS=40 --name spider youtipie/tmdb-scraper:latest
 ```
 That's it! Once started, it will run all the necessary spiders and create a cron task to update movies and TV series at midnight.
 
