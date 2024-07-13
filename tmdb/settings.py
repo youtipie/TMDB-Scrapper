@@ -23,9 +23,11 @@ LOG_LEVEL = "INFO"
 
 LOG_FORMATTER = "tmdb.log_formatter.PoliteLogFormatter"
 
-CONCURRENT_REQUESTS = 50
+CONCURRENT_REQUESTS = os.environ["CONCURRENT_REQUESTS"]
 
-RETRY_HTTP_CODES = [429]
+RETRY_ENABLED = True
+RETRY_TIMES = 10
+RETRY_HTTP_CODES = [408, 429, 500, 502, 503, 504]
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
@@ -35,8 +37,7 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable spider middlewares
 SPIDER_MIDDLEWARES = {
-    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
-    "tmdb.middlewares.TooManyRequestsRetryMiddleware": 543,
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None
 }
 
 # Enable or disable downloader middlewares
@@ -45,6 +46,8 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
     'scrapy_fake_useragent.middleware.RetryUserAgentMiddleware': 401,
+    "tmdb.middlewares.TooManyRequestsRetryMiddleware": 543,
+
 }
 
 FAKEUSERAGENT_PROVIDERS = [
